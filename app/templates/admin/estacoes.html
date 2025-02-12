@@ -1,0 +1,25 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<h2>Estações</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<a href="{{ url_for('admin.adicionar_estacao') }}">Adicionar Estação</a>
+<ul>
+    {% for estacao in estacoes %}
+    <li>
+        {{ estacao.nome }} - {{ estacao.localizacao }} (Capacidade: {{ estacao.capacidade }})
+        <form action="{{ url_for('admin.remover_estacao', id=estacao.id) }}" method="POST" style="display:inline;">
+            <button type="submit">Remover</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

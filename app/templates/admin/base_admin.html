@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administração</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Painel de Administração</h1>
+        <nav>
+            {% if 'admin_id' in session %}
+                <!-- Links exibidos quando o administrador está logado -->
+                <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin.admin_estacoes') }}">Estações</a>
+                <a href="{{ url_for('admin.admin_bicicletas') }}">Bicicletas</a>
+                <a href="{{ url_for('admin.logout') }}">Logout</a>
+            {% else %}
+                <!-- Links exibidos quando o administrador não está logado -->
+                <a href="{{ url_for('admin.login') }}">Login</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

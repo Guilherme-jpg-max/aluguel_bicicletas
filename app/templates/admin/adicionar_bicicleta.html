@@ -1,0 +1,30 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<h2>Adicionar Bicicleta</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<form method="POST">
+    <label for="modelo">Modelo:</label>
+    <input type="text" id="modelo" name="modelo" required>
+    <br>
+    <label for="numero_serie">Número de Série:</label>
+    <input type="text" id="numero_serie" name="numero_serie" required>
+    <br>
+    <label for="estacao_id">Estação:</label>
+    <select id="estacao_id" name="estacao_id" required>
+        {% for estacao in estacoes %}
+        <option value="{{ estacao.id }}">{{ estacao.nome }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <button type="submit">Adicionar</button>
+</form>
+{% endblock %}
