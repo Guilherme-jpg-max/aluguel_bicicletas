@@ -165,7 +165,6 @@ def logout():
     return redirect(url_for('admin.login'))
 
 
-
 # Rota para remover uma estação
 @admin_bp.route('/estacoes/remover/<int:id>', methods=['POST'])
 @login_required

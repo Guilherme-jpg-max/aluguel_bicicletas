@@ -1,21 +1,53 @@
-{% extends "user/base.html" %}
+<h3>Bem-vindo, {{ usuario.nome }}!</h3>
 
-{% block content %}
-    <div class="dashboard">
-        <h1>Bem-vindo, {{ usuario.nome }}!</h1>
-        <p>Este é o seu painel de controle.</p>
-        
-        <h3>Informações do Usuário</h3>
-        <ul>
-            <li>Email: {{ usuario.email }}</li>
-            <li>ID: {{ usuario.id }}</li>
+<!-- Verifica se o usuário tem saldo disponível -->
+{% if usuario.saldo <= 0 %}
+    <p>Você não tem saldo suficiente para realizar aluguéis. <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a></p>
+{% else %}
+    <p>Saldo disponível: R$ {{ usuario.saldo }}</p>
+{% endif %}
 
-        </ul>
+<h3>Aluguéis Ativos</h3>
+{% if usuario.alugueis %}  <!-- Verifica se o usuário tem aluguéis -->
+    <ul>
+        {% for aluguel in usuario.alugueis %}
+            {% if aluguel.data_fim is none %}  <!-- Aluguel ainda ativo -->
+                <li>
+                    Bicicleta: {{ aluguel.bicicleta.modelo }}<br>
+                    Estação de devolução: {{ aluguel.bicicleta.estacao.nome }}<br>
+                    
+                    <!-- Verifica se aluguel.tempo_horas é um valor válido -->
+                    {% if aluguel.tempo_horas and aluguel.tempo_horas > 0 %}
+                        Tempo restante: {{ (aluguel.data_inicio + timedelta(hours=aluguel.tempo_horas)).strftime('%H:%M') }}<br>
+                    {% else %}
+                        Tempo restante: Indefinido<br>
+                    {% endif %}
+                    
+                    <!-- Formulário para devolver a bicicleta -->
+                    <form method="POST" action="{{ url_for('user.devolver_bicicleta', aluguel_id=aluguel.id, estacao_id=aluguel.bicicleta.estacao_id) }}">
+                        <button type="submit">Devolver Bicicleta</button>
+                    </form>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Você não tem alugueis ativos no momento.</p>
+{% endif %}
 
-        <h3>Opções</h3>
-        <ul>
-            <li><a href="{{ url_for('user.logout') }}">Logout</a></li>
-
-        </ul>
-    </div>
-{% endblock %}
+<h3>Estações Disponíveis</h3>
+{% if estacoes %}
+    <ul>
+        {% for estacao in estacoes %}
+            <li>
+                {{ estacao.nome }} - Localização: {{ estacao.localizacao }}
+                <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a>
+                <a href="{{ url_for('user.listar_bicicletas_por_estacao', estacao_id=estacao.id) }}">
+                    <button>Escolher Estação</button>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Não há estações disponíveis no momento.</p>
+{% endif %}

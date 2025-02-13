@@ -1,0 +1,32 @@
+{% for bicicleta in bicicletas %}
+    <div>
+        <h4>{{ bicicleta.modelo }}</h4>
+        <p>Status: {{ bicicleta.status }}</p>
+
+        {% if bicicleta.status == 'disponivel' %}
+            <!-- Formulário de Aluguel -->
+            <form method="POST" action="{{ url_for('user.alugar_bicicleta', estacao_id=estacao.id, bicicleta_id=bicicleta.id) }}">
+                <label for="tempo_horas">Tempo de aluguel (em horas):</label>
+                <input type="number" id="tempo_horas" name="tempo_horas" min="1" required>
+
+                <p>Preço por hora: R$ 5.00</p>
+                <p>Valor total: R$ <span id="valor_total">5.00</span></p>
+
+                <button type="submit">Confirmar Aluguel</button>
+            </form>
+        {% else %}
+            <p>Esta bicicleta está alugada.</p>
+        {% endif %}
+    </div>
+{% endfor %}
+
+<script>
+    document.querySelectorAll("#tempo_horas").forEach(input => {
+        input.addEventListener("input", function() {
+            const tempoHoras = this.value;
+            const precoHora = 5.0;
+            const valorTotal = tempoHoras * precoHora;
+            document.getElementById("valor_total").textContent = valorTotal.toFixed(2);
+        });
+    });
+</script>

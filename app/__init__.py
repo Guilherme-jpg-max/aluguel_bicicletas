@@ -12,6 +12,7 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
+        
         from .routes.admin import admin_bp
         from .routes.usuario import user_bp
         from .routes.main import main_bp

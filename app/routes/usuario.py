@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app.models import Usuario
 from app import db
 from functools import wraps
+from datetime import datetime, timedelta
+from app.models import Usuario, Estacao, Bicicleta, Aluguel
 
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
@@ -50,14 +52,20 @@ def login():
 
         usuario = Usuario.query.filter_by(email=email).first()
 
-        if usuario and usuario.check_senha(senha):
-            session['usuario_id'] = usuario.id
-            flash('Login realizado com sucesso!', 'success')
-            return redirect(url_for('user.dashboard'))
-        else:
+        if not usuario:
+            flash('Usuário não encontrado!', 'error')
+            return redirect(url_for('user.login'))
+
+        if not usuario.check_senha(senha):
             flash('Email ou senha incorretos!', 'error')
+            return redirect(url_for('user.login'))
+
+        session['usuario_id'] = usuario.id  # Salva ID do usuário na sessão
+        flash('Login realizado com sucesso!', 'success')
+        return redirect(url_for('user.dashboard'))
 
     return render_template('user/login.html')
+
 
 
 # Rota para logout
@@ -73,5 +81,141 @@ def logout():
 def dashboard():
     usuario_id = session.get('usuario_id')
     usuario = Usuario.query.get(usuario_id)
+    estacoes = Estacao.query.all()
 
-    return render_template('user/dashboard.html', usuario=usuario)
+    bicicletas_disponiveis = Bicicleta.query.filter_by(status='disponivel').all()
+
+
+    aluguels_ativos = Aluguel.query.filter_by(usuario_id=usuario.id, data_fim=None).limit(3).all()
+
+    return render_template('user/dashboard.html', usuario=usuario, estacoes=estacoes, bicicletas=bicicletas_disponiveis, aluguels_ativos=aluguels_ativos, timedelta=timedelta)
+
+
+
+@user_bp.route('/alugar/<int:estacao_id>/<int:bicicleta_id>', methods=['POST'])
+@login_required
+def alugar_bicicleta(estacao_id, bicicleta_id):
+    usuario_id = session.get('usuario_id')
+    usuario = Usuario.query.get(usuario_id)
+
+    if not usuario:
+        flash('Usuário não encontrado!', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    # Verifica se o usuário já tem 3 aluguéis ativos
+    aluguels_ativos = Aluguel.query.filter_by(usuario_id=usuario.id, data_fim=None).count()
+    if aluguels_ativos >= 3:
+        flash('Você já tem 3 aluguéis ativos. Não é possível alugar mais bicicletas.', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    # Verifica se a bicicleta está disponível
+    bicicleta = Bicicleta.query.filter_by(id=bicicleta_id, estacao_id=estacao_id, status='disponivel').first()
+
+    if not bicicleta:
+        flash('Bicicleta não disponível!', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    tempo_horas = int(request.form['tempo_horas'])
+    preco_por_hora = 5.0
+    valor_total = tempo_horas * preco_por_hora
+
+
+    if usuario.saldo < valor_total:
+        flash('Saldo insuficiente para alugar esta bicicleta.', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    usuario.saldo -= valor_total
+    bicicleta.status = 'alugada'
+
+    aluguel = Aluguel(usuario_id=usuario.id, bicicleta_id=bicicleta.id, administrador_id=1)
+    db.session.add(aluguel)
+    db.session.commit()
+
+    flash(f'Bicicleta {bicicleta.modelo} alugada com sucesso por {tempo_horas} horas!', 'success')
+    return redirect(url_for('user.dashboard'))
+
+
+
+@user_bp.route('/bicicletas/<int:estacao_id>')
+@login_required
+def listar_bicicletas_por_estacao(estacao_id):
+    estacao = Estacao.query.get_or_404(estacao_id)
+    bicicletas = Bicicleta.query.filter_by(estacao_id=estacao.id).all()
+
+    return render_template('user/listar_bicicletas.html', estacao=estacao, bicicletas=bicicletas)
+
+
+@user_bp.route('/adicionar_saldo', methods=['GET', 'POST'])
+@login_required
+def adicionar_saldo():
+    usuario_id = session.get('usuario_id')
+    usuario = Usuario.query.get(usuario_id)
+
+    if request.method == 'POST':
+        valor_adicionado = float(request.form['valor'])
+
+        if valor_adicionado <= 0:
+            flash('Valor inválido!', 'error')
+            return redirect(url_for('user.adicionar_saldo'))
+
+        usuario.saldo += valor_adicionado
+        db.session.commit()
+
+        flash(f'Saldo adicionado com sucesso! Seu novo saldo é R${usuario.saldo:.2f}', 'success')
+        return redirect(url_for('user.dashboard'))
+
+    return render_template('user/adicionar_saldo.html')
+
+
+from datetime import datetime
+
+from datetime import datetime
+
+@user_bp.route('/devolver/<int:aluguel_id>/<int:estacao_id>', methods=['POST'])
+@login_required
+def devolver_bicicleta(aluguel_id, estacao_id):
+    usuario_id = session.get('usuario_id')
+    usuario = Usuario.query.get(usuario_id)
+
+    aluguel = Aluguel.query.get_or_404(aluguel_id)
+    bicicleta = aluguel.bicicleta
+
+    if aluguel.usuario_id != usuario.id:
+        flash('Você não tem permissão para devolver esta bicicleta.', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    if bicicleta.status == 'disponivel':
+        flash('Esta bicicleta já foi devolvida.', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    # Verifica se a bicicleta está sendo devolvida na estação correta
+    if bicicleta.estacao_id != estacao_id:
+        flash('A bicicleta precisa ser devolvida na estação correta.', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    bicicleta.status = 'disponivel'
+    aluguel.data_fim = datetime.utcnow()
+
+    if aluguel.data_fim < aluguel.data_inicio:
+        flash('Data de devolução inválida.', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    # Calcula o tempo gasto em horas
+    tempo_gasto = (aluguel.data_fim - aluguel.data_inicio).total_seconds() / 3600  # tempo em horas
+
+    # Verifica se o tempo de aluguel é válido
+    if tempo_gasto <= 0:
+        flash('O tempo de aluguel não pode ser negativo ou zero.', 'error')
+        return redirect(url_for('user.dashboard'))
+
+    if aluguel.valor_total is None:
+
+        valor_total = tempo_gasto * bicicleta.valor_por_hora
+        aluguel.valor_total = valor_total
+
+        # Atualiza o aluguel com o valor total
+        db.session.commit()
+
+    flash(f'Bicicleta {bicicleta.modelo} devolvida com sucesso! Valor total: R$ {aluguel.valor_total:.2f}', 'success')
+
+    return redirect(url_for('user.dashboard'))
