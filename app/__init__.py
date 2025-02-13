@@ -14,9 +14,11 @@ def create_app():
     with app.app_context():
         from .routes.admin import admin_bp
         from .routes.usuario import user_bp
+        from .routes.main import main_bp
 
         app.register_blueprint(admin_bp)
         app.register_blueprint(user_bp)
+        app.register_blueprint(main_bp)
 
         db.create_all()  # Cria as tabelas no banco de dados
 

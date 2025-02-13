@@ -16,12 +16,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Rota de redirecionamento para login
-@user_bp.route('/')
-def index():
-
-    return redirect(url_for('user.cadastrar_usuario'))
-
 # Rota para cadastrar um usuário
 @user_bp.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar_usuario():
