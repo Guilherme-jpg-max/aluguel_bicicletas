@@ -1,28 +1,31 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from functools import wraps
-from app.models import Estacao, Bicicleta, Administrador
+from flask_login import login_required
+from app.models import Estacao, Bicicleta, Administrador, Aluguel
 from app import db
 
-# Cria um Blueprint para as rotas de administração
+
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # Decorator para verificar se o administrador está logado
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'admin_id' not in session:
+        admin_id = session.get('admin_id') 
+        if not admin_id:
             flash('Você precisa estar logado para acessar esta página.', 'error')
             return redirect(url_for('admin.login'))
         
-        # Verifica se o administrador ainda existe no banco de dados
-        admin = Administrador.query.get(session['admin_id'])
+        # Verifica se o administrador ainda existe no banco
+        admin = Administrador.query.get(admin_id)
         if not admin:
-            session.pop('admin_id', None)  # Encerra a sessão
-            flash('Sua conta foi removida. Por favor, faça login novamente.', 'error')
+            session.pop('admin_id', None)
+            flash('Sua conta foi removida. Faça login novamente.', 'error')
             return redirect(url_for('admin.login'))
         
         return f(*args, **kwargs)
     return decorated_function
+
 
 # Rota para cadastrar um administrador
 @admin_bp.route('/cadastrar', methods=['GET', 'POST'])
@@ -32,14 +35,13 @@ def cadastrar_admin():
         email = request.form['email']
         senha = request.form['senha']
 
-        # Verifica se o email já está cadastrado
         if Administrador.query.filter_by(email=email).first():
             flash('Email já cadastrado!', 'error')
             return redirect(url_for('admin.cadastrar_admin'))
 
-        # Cria um novo administrador
+
         novo_admin = Administrador(nome=nome, email=email)
-        novo_admin.set_senha(senha)  # Gera o hash da senha
+        novo_admin.set_senha(senha)
         db.session.add(novo_admin)
         db.session.commit()
 
@@ -52,17 +54,29 @@ def cadastrar_admin():
 @admin_bp.route('/dashboard')
 @login_required
 def admin_dashboard():
-    administradores = Administrador.query.all()
-    return render_template('admin/dashboard.html', administradores=administradores)
+    admin_id = session.get('admin_id')
+    
+    if not admin_id:
+        flash("Acesso negado!", "danger")
+        return redirect(url_for('admin.login'))
 
-# Rota para listar estações (protegida)
+    administrador = Administrador.query.get(admin_id)
+    
+    if not administrador:
+        session.pop('admin_id', None)
+        flash('Sua conta não existe mais. Faça login novamente.', 'error')
+        return redirect(url_for('admin.login'))
+
+    alugueis = Aluguel.query.all()
+    
+    return render_template('admin/dashboard.html', alugueis=alugueis, administrador=administrador)
+
+
 @admin_bp.route('/estacoes')
 @login_required
 def admin_estacoes():
-    # Obtém o ID do administrador logado
     admin_id = session.get('admin_id')
     
-    # Filtra as estações pelo administrador logado
     estacoes = Estacao.query.filter_by(administrador_id=admin_id).all()
     
     return render_template('admin/estacoes.html', estacoes=estacoes)
@@ -75,7 +89,7 @@ def adicionar_estacao():
         nome = request.form['nome']
         localizacao = request.form['localizacao']
         capacidade = request.form['capacidade']
-        admin_id = session.get('admin_id')  # Obtém o ID do administrador logado
+        admin_id = session.get('admin_id')
 
         nova_estacao = Estacao(nome=nome, localizacao=localizacao, capacidade=capacidade, administrador_id=admin_id)
         db.session.add(nova_estacao)
@@ -86,14 +100,13 @@ def adicionar_estacao():
 
     return render_template('admin/adicionar_estacao.html')
 
-# Rota para listar bicicletas (protegida)
+
 @admin_bp.route('/bicicletas')
 @login_required
 def admin_bicicletas():
-    # Obtém o ID do administrador logado
+
     admin_id = session.get('admin_id')
     
-    # Filtra as bicicletas pelo administrador logado
     bicicletas = Bicicleta.query.filter_by(administrador_id=admin_id).all()
     
     return render_template('admin/bicicletas.html', bicicletas=bicicletas)
@@ -106,9 +119,8 @@ def adicionar_bicicleta():
         modelo = request.form['modelo']
         numero_serie = request.form['numero_serie']
         estacao_id = request.form['estacao_id']
-        admin_id = session.get('admin_id')  # Obtém o ID do administrador logado
-
-        # Verifica se o número de série já existe para o administrador logado
+        admin_id = session.get('admin_id')
+        
         if Bicicleta.query.filter_by(numero_serie=numero_serie, administrador_id=admin_id).first():
             flash('Número de série já cadastrado para o seu perfil!', 'error')
             return redirect(url_for('admin.adicionar_bicicleta'))
@@ -120,7 +132,7 @@ def adicionar_bicicleta():
         flash('Bicicleta adicionada com sucesso!', 'success')
         return redirect(url_for('admin.admin_bicicletas'))
 
-    # Filtra as estações pelo administrador logado
+
     admin_id = session.get('admin_id')
     estacoes = Estacao.query.filter_by(administrador_id=admin_id).all()
     
@@ -136,7 +148,7 @@ def login():
         admin = Administrador.query.filter_by(email=email).first()
 
         if admin and admin.check_senha(senha):
-            session['admin_id'] = admin.id  # Armazena o ID do admin na sessão
+            session['admin_id'] = admin.id
             flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('admin.admin_dashboard'))
         else:
@@ -144,12 +156,14 @@ def login():
 
     return render_template('admin/login.html')
 
+
 # Rota para logout
 @admin_bp.route('/logout')
 def logout():
-    session.pop('admin_id', None)  # Remove o ID do admin da sessão
+    session.pop('admin_id', None)
     flash('Logout realizado com sucesso!', 'success')
     return redirect(url_for('admin.login'))
+
 
 
 # Rota para remover uma estação
@@ -182,9 +196,9 @@ def remover_bicicleta(id):
 def remover_administrador(id):
     administrador = Administrador.query.get_or_404(id)
     
-    # Verifica se o administrador removido é o mesmo que está logado
+
     if administrador.id == session.get('admin_id'):
-        session.pop('admin_id', None)  # Encerra a sessão
+        session.pop('admin_id', None)  
         flash('Você removeu sua própria conta. Por favor, faça login novamente.', 'success')
     else:
         flash('Administrador removido com sucesso!', 'success')

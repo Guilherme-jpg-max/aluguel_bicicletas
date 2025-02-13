@@ -1,0 +1,21 @@
+{% extends "user/base.html" %}
+
+{% block content %}
+    <div class="dashboard">
+        <h1>Bem-vindo, {{ usuario.nome }}!</h1>
+        <p>Este é o seu painel de controle.</p>
+        
+        <h3>Informações do Usuário</h3>
+        <ul>
+            <li>Email: {{ usuario.email }}</li>
+            <li>ID: {{ usuario.id }}</li>
+
+        </ul>
+
+        <h3>Opções</h3>
+        <ul>
+            <li><a href="{{ url_for('user.logout') }}">Logout</a></li>
+
+        </ul>
+    </div>
+{% endblock %}

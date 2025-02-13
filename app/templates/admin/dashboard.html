@@ -2,6 +2,7 @@
 
 {% block content %}
 <h2>Dashboard do Administrador</h2>
+
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
@@ -11,5 +12,62 @@
         {% endfor %}
     {% endif %}
 {% endwith %}
-<p>Bem-vindo ao painel de administração.</p>
+
+<p>Bem-vindo, {{ administrador.nome }}!</p>
+
+<h3>Aluguéis Recentes</h3>
+
+{% if alugueis %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Usuário</th>
+            <th>Bicicleta</th>
+            <th>Data de Início</th>
+            <th>Data de Fim</th>
+            <th>Valor Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for aluguel in alugueis %}
+        <tr>
+            <td>{{ aluguel.id }}</td>
+            <td>
+                {% if aluguel.usuario %}
+                    {{ aluguel.usuario.nome }}
+                {% else %}
+                    <i>Usuário não encontrado</i>
+                {% endif %}
+            </td>
+            <td>
+                {% if aluguel.bicicleta %}
+                    {{ aluguel.bicicleta.modelo }}
+                {% else %}
+                    <i>Bicicleta não encontrada</i>
+                {% endif %}
+            </td>
+            <td>{{ aluguel.data_inicio.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>
+                {% if aluguel.data_fim %}
+                    {{ aluguel.data_fim.strftime('%d/%m/%Y %H:%M') }}
+                {% else %}
+                    Em andamento
+                {% endif %}
+            </td>
+            <td>
+                {% if aluguel.valor_total %}
+                    R$ {{ aluguel.valor_total | round(2) }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhum aluguel registrado ainda.</p>
+{% endif %}
+
 {% endblock %}
