@@ -26,7 +26,7 @@ class Usuario(db.Model):
     senha_hash = db.Column(db.String(128), nullable=False)
     saldo = db.Column(db.Float, nullable=False, default=0.0)
 
-    alugueis_usuario = db.relationship('Aluguel', lazy=True, overlaps="alugueis_usuario")
+    alugueis = db.relationship('Aluguel', back_populates='usuario', overlaps="alugueis_usuario")
 
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)
@@ -55,7 +55,7 @@ class Bicicleta(db.Model):
     valor_por_hora = db.Column(db.Float, nullable=False, default=5.0)
 
     estacao = db.relationship('Estacao', back_populates='bicicletas')
-    alugueis = db.relationship('Aluguel', back_populates='bicicleta', overlaps="alugueis")
+    alugueis = db.relationship('Aluguel', back_populates='bicicleta', overlaps="alugueis_bicicleta")
 
 
 class Aluguel(db.Model):
@@ -67,6 +67,6 @@ class Aluguel(db.Model):
     data_fim = db.Column(db.DateTime, nullable=True)
     valor_total = db.Column(db.Float, nullable=True)
 
-    usuario = db.relationship('Usuario', backref='alugueis', lazy=True)
-    bicicleta = db.relationship('Bicicleta', backref='alugueis_bicicleta', lazy=True)
-    administrador = db.relationship('Administrador', backref='alugueis_administrador', lazy=True)
+    usuario = db.relationship('Usuario', back_populates='alugueis', overlaps="alugueis_usuario")
+    bicicleta = db.relationship('Bicicleta', back_populates='alugueis', overlaps="alugueis_bicicleta")
+    administrador = db.relationship('Administrador', back_populates='alugueis', overlaps="alugueis_administrador")
