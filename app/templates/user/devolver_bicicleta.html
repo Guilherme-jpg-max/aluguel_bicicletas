@@ -9,16 +9,17 @@
                 <p>Status: {{ aluguel.bicicleta.status }}</p>
 
                 {% if aluguel.bicicleta.status == 'alugada' %}
-                    <form method="POST" action="{{ url_for('user.devolver_bicicleta', aluguel_id=aluguel.id, estacao_id=aluguel.bicicleta.estacao.id) }}">
-                        <label for="estacao">Escolha a estação de devolução:</label>
-                        <select id="estacao" name="estacao_id" required>
+                    <form method="POST" action="{{ url_for('user.devolver_bicicleta', aluguel_id=aluguel.id) }}">
+                        <label for="estacao_{{ aluguel.id }}">Escolha a estação de devolução:</label>
+                        <select id="estacao_{{ aluguel.id }}" name="estacao_id" required>
                             {% for estacao in estacoes %}
                                 <option value="{{ estacao.id }}">{{ estacao.nome }} - {{ estacao.localizacao }}</option>
                             {% endfor %}
                         </select>
-
                         <button type="submit">Devolver Bicicleta</button>
                     </form>
+                
+                
                 {% else %}
                     <p>Esta bicicleta já foi devolvida.</p>
                 {% endif %}

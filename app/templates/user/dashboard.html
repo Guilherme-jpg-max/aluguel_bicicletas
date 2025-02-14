@@ -1,30 +1,38 @@
 <h3>Bem-vindo, {{ usuario.nome }}!</h3>
 
-<!-- Verifica se o usuário tem saldo disponível -->
+<!-- Exibe o saldo do usuário -->
+<p>Saldo disponível: R$ {{ '%.2f'|format(usuario.saldo if usuario.saldo > 0 else 0) }}</p>
+
 {% if usuario.saldo <= 0 %}
-    <p>Você não tem saldo suficiente para realizar aluguéis. <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a></p>
-{% else %}
-    <p>Saldo disponível: R$ {{ usuario.saldo }}</p>
+    <p>Você não tem saldo suficiente para realizar aluguéis. 
+        <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a>
+    </p>
 {% endif %}
 
 <h3>Aluguéis Ativos</h3>
-{% if usuario.alugueis %}  <!-- Verifica se o usuário tem aluguéis -->
+{% if usuario.alugueis %}
     <ul>
         {% for aluguel in usuario.alugueis %}
-            {% if aluguel.data_fim is none %}  <!-- Aluguel ainda ativo -->
+            {% if aluguel.data_fim is none %}
                 <li>
-                    Bicicleta: {{ aluguel.bicicleta.modelo }}<br>
-                    Estação de devolução: {{ aluguel.bicicleta.estacao.nome }}<br>
-                    
-                    <!-- Verifica se aluguel.tempo_horas é um valor válido -->
+                    <strong>Bicicleta:</strong> {{ aluguel.bicicleta.modelo }}<br>
+                    <strong>Estação Atual:</strong> {{ aluguel.bicicleta.estacao.nome }}<br>
+
+                    <!-- Exibição do tempo restante corrigida -->
                     {% if aluguel.tempo_horas and aluguel.tempo_horas > 0 %}
-                        Tempo restante: {{ (aluguel.data_inicio + timedelta(hours=aluguel.tempo_horas)).strftime('%H:%M') }}<br>
+                        <strong>Tempo restante:</strong> {{ (aluguel.data_inicio + timedelta(hours=aluguel.tempo_horas)).strftime('%H:%M') }}<br>
                     {% else %}
-                        Tempo restante: Indefinido<br>
+                        <strong>Tempo restante:</strong> Indefinido<br>
                     {% endif %}
-                    
+
                     <!-- Formulário para devolver a bicicleta -->
-                    <form method="POST" action="{{ url_for('user.devolver_bicicleta', aluguel_id=aluguel.id, estacao_id=aluguel.bicicleta.estacao_id) }}">
+                    <form method="POST" action="{{ url_for('user.devolver_bicicleta', aluguel_id=aluguel.id) }}">
+                        <label for="estacao_{{ aluguel.id }}">Escolha a estação de devolução:</label>
+                        <select id="estacao_{{ aluguel.id }}" name="estacao_id" required>
+                            {% for estacao in estacoes %}
+                                <option value="{{ estacao.id }}">{{ estacao.nome }} - {{ estacao.localizacao }}</option>
+                            {% endfor %}
+                        </select>
                         <button type="submit">Devolver Bicicleta</button>
                     </form>
                 </li>
@@ -32,7 +40,7 @@
         {% endfor %}
     </ul>
 {% else %}
-    <p>Você não tem alugueis ativos no momento.</p>
+    <p>Você não tem aluguéis ativos no momento.</p>
 {% endif %}
 
 <h3>Estações Disponíveis</h3>
@@ -40,7 +48,7 @@
     <ul>
         {% for estacao in estacoes %}
             <li>
-                {{ estacao.nome }} - Localização: {{ estacao.localizacao }}
+                <strong>{{ estacao.nome }}</strong> - Localização: {{ estacao.localizacao }}
                 <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a>
                 <a href="{{ url_for('user.listar_bicicletas_por_estacao', estacao_id=estacao.id) }}">
                     <button>Escolher Estação</button>
