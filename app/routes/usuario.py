@@ -102,20 +102,16 @@ def alugar_bicicleta(estacao_id, bicicleta_id):
         flash('Usuário não encontrado!', 'error')
         return redirect(url_for('user.dashboard'))
 
-    # Obtém todos os aluguéis ativos do usuário
     aluguels_ativos = Aluguel.query.filter_by(usuario_id=usuario.id, data_fim=None).all()
 
-    # Verifica se o usuário já tem 3 aluguéis ativos
     if len(aluguels_ativos) >= 3:
         flash('Você já tem 3 aluguéis ativos. Não é possível alugar mais bicicletas.', 'error')
         return redirect(url_for('user.dashboard'))
 
-    # Se o usuário já tem aluguéis, verifica se a estação é a mesma
     if aluguels_ativos and any(aluguel.bicicleta.estacao_id != estacao_id for aluguel in aluguels_ativos):
         flash('Você só pode alugar bicicletas na mesma estação das já alugadas.', 'error')
         return redirect(url_for('user.dashboard'))
 
-    # Verifica se a bicicleta está disponível na estação correta
     bicicleta = Bicicleta.query.filter_by(id=bicicleta_id, estacao_id=estacao_id, status='disponivel').first()
 
     if not bicicleta:
@@ -200,27 +196,24 @@ def devolver_bicicleta(aluguel_id):
         return redirect(url_for('user.dashboard'))
 
     bicicleta.status = 'disponivel'
-    bicicleta.estacao_id = estacao_id  # Atualiza a estação da bicicleta
+    bicicleta.estacao_id = estacao_id 
     aluguel.data_fim = datetime.utcnow()
 
     if aluguel.data_fim < aluguel.data_inicio:
         flash('Data de devolução inválida.', 'error')
         return redirect(url_for('user.dashboard'))
 
-    # Calculando o tempo de aluguel em horas
     tempo_aluguel = (aluguel.data_fim - aluguel.data_inicio).total_seconds() / 3600  # em horas
 
-    # Usando o valor correto por hora da bicicleta
-    if bicicleta.valor_por_hora:  # Verifica se existe valor por hora na bicicleta
+    if bicicleta.valor_por_hora: 
         valor_total = tempo_aluguel * bicicleta.valor_por_hora
     else:
         flash('Valor por hora não disponível para esta bicicleta.', 'error')
         return redirect(url_for('user.dashboard'))
 
-    aluguel.valor_total = valor_total  # Atualiza o valor total no aluguel
+    aluguel.valor_total = valor_total
     db.session.commit()
 
     flash(f'Bicicleta {bicicleta.modelo} devolvida com sucesso na estação {estacao.nome}!', 'success')
 
     return redirect(url_for('user.dashboard'))
-

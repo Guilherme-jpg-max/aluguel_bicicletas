@@ -18,7 +18,7 @@ def create_app(config_name=None):
     elif config_name == 'production':
         app.config.from_object(ProductionConfig)
     else:
-        app.config.from_object(DevelopmentConfig)  # Padrão para desenvolvimento
+        app.config.from_object(DevelopmentConfig)
 
     db.init_app(app)
 

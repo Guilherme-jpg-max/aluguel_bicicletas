@@ -16,8 +16,8 @@ def login_required(f):
             flash('Você precisa estar logado para acessar esta página.', 'error')
             return redirect(url_for('admin.login'))
         
-        # Verifica se o administrador ainda existe no banco
-        admin = Administrador.query.get(admin_id)
+        # Substitua Query.get() por Session.get()
+        admin = db.session.get(Administrador, admin_id)
         if not admin:
             session.pop('admin_id', None)
             flash('Sua conta foi removida. Faça login novamente.', 'error')
@@ -60,7 +60,8 @@ def admin_dashboard():
         flash("Acesso negado!", "danger")
         return redirect(url_for('admin.login'))
 
-    administrador = Administrador.query.get(admin_id)
+    # Substitua Query.get() por Session.get()
+    administrador = db.session.get(Administrador, admin_id)
     
     if not administrador:
         session.pop('admin_id', None)
@@ -169,7 +170,11 @@ def logout():
 @admin_bp.route('/estacoes/remover/<int:id>', methods=['POST'])
 @login_required
 def remover_estacao(id):
-    estacao = Estacao.query.get_or_404(id)
+    # Substitua Query.get_or_404() por Session.get() com tratamento de erro
+    estacao = db.session.get(Estacao, id)
+    if not estacao:
+        flash('Estação não encontrada!', 'error')
+        return redirect(url_for('admin.admin_estacoes'))
     
     for bicicleta in estacao.bicicletas:
         db.session.delete(bicicleta)
@@ -183,7 +188,12 @@ def remover_estacao(id):
 @admin_bp.route('/bicicletas/remover/<int:id>', methods=['POST'])
 @login_required
 def remover_bicicleta(id):
-    bicicleta = Bicicleta.query.get_or_404(id)
+    # Substitua Query.get_or_404() por Session.get() com tratamento de erro
+    bicicleta = db.session.get(Bicicleta, id)
+    if not bicicleta:
+        flash('Bicicleta não encontrada!', 'error')
+        return redirect(url_for('admin.admin_bicicletas'))
+    
     db.session.delete(bicicleta)
     db.session.commit()
     flash('Bicicleta removida com sucesso!', 'success')

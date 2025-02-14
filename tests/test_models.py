@@ -2,10 +2,9 @@ import pytest
 from app import create_app, db
 from app.models import Administrador, Usuario, Estacao, Bicicleta, Aluguel
 
-# Configuração do aplicativo para os testes
 @pytest.fixture(scope='module')
 def test_client():
-    app = create_app('testing')  # Supondo que você tenha um ambiente de teste
+    app = create_app('testing') 
     with app.app_context():
         db.create_all()
         yield app.test_client()
@@ -18,12 +17,11 @@ def test_administrador_criar(test_client):
     db.session.add(administrador)
     db.session.commit()
     
-    # Verificar se o administrador foi criado e a senha foi criptografada
     assert administrador.nome == 'Admin Test'
     assert administrador.email == 'admin@test.com'
-    assert administrador.check_senha('12345')  # A senha deve ser validada
+    assert administrador.check_senha('12345')
 
-# Testando o modelo Usuario
+
 def test_usuario_criar(test_client):
     usuario = Usuario(nome='Usuario Test', email='usuario@test.com', saldo=50.0)
     usuario.set_senha('senha123')
@@ -34,7 +32,7 @@ def test_usuario_criar(test_client):
     assert usuario.nome == 'Usuario Test'
     assert usuario.email == 'usuario@test.com'
     assert usuario.saldo == 50.0
-    assert usuario.check_senha('senha123')  # Verifica a senha criptografada
+    assert usuario.check_senha('senha123')
 
 # Testando o modelo Estacao
 def test_estacao_criar(test_client):
