@@ -1,0 +1,54 @@
+/* Estilos do formulário de adicionar saldo */
+.add-saldo-form {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 500px;
+    margin: 40px auto;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.add-saldo-form h3 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.add-saldo-form label {
+    font-size: 16px;
+    color: #555;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.add-saldo-form input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.add-saldo-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: #fff;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-saldo-form button:hover {
+    background-color: #45a049;
+}
+
+.add-saldo-form .mensagem {
+    font-size: 16px;
+    color: #e74c3c;
+    text-align: center;
+    margin-top: 20px;
+}

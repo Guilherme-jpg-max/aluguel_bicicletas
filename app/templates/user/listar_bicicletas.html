@@ -1,24 +1,29 @@
-{% for bicicleta in bicicletas %}
-    <div>
-        <h4>{{ bicicleta.modelo }}</h4>
-        <p>Status: {{ bicicleta.status }}</p>
+{% block content %}
 
-        {% if bicicleta.status == 'disponivel' %}
-            <!-- Formulário de Aluguel -->
-            <form method="POST" action="{{ url_for('user.alugar_bicicleta', estacao_id=estacao.id, bicicleta_id=bicicleta.id) }}">
-                <label for="tempo_horas">Tempo de aluguel (em horas):</label>
-                <input type="number" id="tempo_horas" name="tempo_horas" min="1" required>
+<div class="card-container">
+    {% for bicicleta in bicicletas %}
+        <div>
+            <h4>{{ bicicleta.modelo }}</h4>
+            <p>Status: {{ bicicleta.status }}</p>
+            <p class="estacao">Estação: {{ bicicleta.estacao.nome }}</p> <!-- Adicionando a estação associada -->
 
-                <p>Preço por hora: R$ 5.00</p>
-                <p>Valor total: R$ <span id="valor_total">5.00</span></p>
+            {% if bicicleta.status == 'disponivel' %}
+                <!-- Formulário de Aluguel -->
+                <form method="POST" action="{{ url_for('user.alugar_bicicleta', estacao_id=estacao.id, bicicleta_id=bicicleta.id) }}">
+                    <label for="tempo_horas">Tempo de aluguel (em horas):</label>
+                    <input type="number" id="tempo_horas" name="tempo_horas" min="1" required>
 
-                <button type="submit">Confirmar Aluguel</button>
-            </form>
-        {% else %}
-            <p>Esta bicicleta está alugada.</p>
-        {% endif %}
-    </div>
-{% endfor %}
+                    <p>Preço por hora: R$ 5.00</p>
+                    <p>Valor total: R$ <span id="valor_total">5.00</span></p>
+
+                    <button type="submit">Confirmar Aluguel</button>
+                </form>
+            {% else %}
+                <p>Esta bicicleta está alugada.</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
 
 <script>
     document.querySelectorAll("#tempo_horas").forEach(input => {
@@ -30,3 +35,4 @@
         });
     });
 </script>
+{% endblock %}

@@ -1,61 +1,71 @@
-<h3>Bem-vindo, {{ usuario.nome }}!</h3>
+{% extends "user/base.html" %}
 
-<!-- Exibe o saldo do usuário -->
-<p>Saldo disponível: R$ {{ '%.2f'|format(usuario.saldo if usuario.saldo > 0 else 0) }}</p>
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/user/dashboard.css') }}">
 
-{% if usuario.saldo <= 0 %}
-    <p>Você não tem saldo suficiente para realizar aluguéis. 
-        <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a>
-    </p>
-{% endif %}
+<div class="dashboard">
+    <h3>Bem-vindo, {{ usuario.nome }}!</h3>
 
-<h3>Aluguéis Ativos</h3>
-{% if usuario.alugueis %}
-    <ul>
-        {% for aluguel in usuario.alugueis %}
-            {% if aluguel.data_fim is none %}
-                <li>
-                    <strong>Bicicleta:</strong> {{ aluguel.bicicleta.modelo }}<br>
-                    <strong>Estação Atual:</strong> {{ aluguel.bicicleta.estacao.nome }}<br>
+    <!-- Exibe o saldo do usuário -->
+    <p>Saldo disponível: R$ {{ '%.2f'|format(usuario.saldo if usuario.saldo > 0 else 0) }}</p>
 
-                    <!-- Exibição do tempo restante corrigida -->
-                    {% if aluguel.tempo_horas and aluguel.tempo_horas > 0 %}
-                        <strong>Tempo restante:</strong> {{ (aluguel.data_inicio + timedelta(hours=aluguel.tempo_horas)).strftime('%H:%M') }}<br>
-                    {% else %}
-                        <strong>Tempo restante:</strong> Indefinido<br>
-                    {% endif %}
+    {% if usuario.saldo <= 0 %}
+        <p class="saldo-insuficiente">Você não tem saldo suficiente para realizar aluguéis. 
+            <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a>
+        </p>
+    {% endif %}
 
-                    <!-- Formulário para devolver a bicicleta -->
-                    <form method="POST" action="{{ url_for('user.devolver_bicicleta', aluguel_id=aluguel.id) }}">
-                        <label for="estacao_{{ aluguel.id }}">Escolha a estação de devolução:</label>
-                        <select id="estacao_{{ aluguel.id }}" name="estacao_id" required>
-                            {% for estacao in estacoes %}
-                                <option value="{{ estacao.id }}">{{ estacao.nome }} - {{ estacao.localizacao }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit">Devolver Bicicleta</button>
-                    </form>
+    <h3>Aluguéis Ativos</h3>
+    {% if usuario.alugueis %}
+        <ul>
+            {% for aluguel in usuario.alugueis %}
+                {% if aluguel.data_fim is none %}
+                    <li>
+                        <strong>Bicicleta:</strong> {{ aluguel.bicicleta.modelo }}<br>
+                        <strong>Estação Atual:</strong> {{ aluguel.bicicleta.estacao.nome }}<br>
+
+                        <!-- Exibição do tempo restante corrigida -->
+                        {% if aluguel.tempo_horas and aluguel.tempo_horas > 0 %}
+                            <strong>Tempo restante:</strong> {{ (aluguel.data_inicio + timedelta(hours=aluguel.tempo_horas)).strftime('%H:%M') }}<br>
+                        {% else %}
+                            <strong>Tempo restante:</strong> Indefinido<br>
+                        {% endif %}
+
+                        <!-- Formulário para devolver a bicicleta -->
+                        <form method="POST" action="{{ url_for('user.devolver_bicicleta', aluguel_id=aluguel.id) }}">
+                            <label for="estacao_{{ aluguel.id }}">Escolha a estação de devolução:</label>
+                            <select id="estacao_{{ aluguel.id }}" name="estacao_id" required>
+                                {% for estacao in estacoes %}
+                                    <option value="{{ estacao.id }}">{{ estacao.nome }} - {{ estacao.localizacao }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit">Devolver Bicicleta</button>
+                        </form>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Você não tem aluguéis ativos no momento.</p>
+    {% endif %}
+
+    <h3>Estações Disponíveis</h3>
+    {% if estacoes %}
+        <ul>
+            {% for estacao in estacoes %}
+                <li class="estacao-item">
+                    <div>
+                        <strong>{{ estacao.nome }}</strong> - Localização: {{ estacao.localizacao }}
+                    </div>
+                    <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a>
+                    <a href="{{ url_for('user.listar_bicicletas_por_estacao', estacao_id=estacao.id) }}">
+                        <button>Escolher Estação</button>
+                    </a>
                 </li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Você não tem aluguéis ativos no momento.</p>
-{% endif %}
-
-<h3>Estações Disponíveis</h3>
-{% if estacoes %}
-    <ul>
-        {% for estacao in estacoes %}
-            <li>
-                <strong>{{ estacao.nome }}</strong> - Localização: {{ estacao.localizacao }}
-                <a href="{{ url_for('user.adicionar_saldo') }}">Adicionar Saldo</a>
-                <a href="{{ url_for('user.listar_bicicletas_por_estacao', estacao_id=estacao.id) }}">
-                    <button>Escolher Estação</button>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Não há estações disponíveis no momento.</p>
-{% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Não há estações disponíveis no momento.</p>
+    {% endif %}
+</div>
+{% endblock %}

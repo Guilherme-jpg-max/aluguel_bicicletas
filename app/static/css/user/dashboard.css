@@ -1,0 +1,113 @@
+/* Estilos do Dashboard */
+.dashboard {
+    background-color: #f4f4f4;
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.dashboard p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.dashboard ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.dashboard ul li {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard ul li strong {
+    color: #333;
+}
+
+.dashboard form {
+    margin-top: 10px;
+}
+
+.dashboard select {
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+}
+
+.dashboard button {
+    padding: 10px 15px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.dashboard button:hover {
+    background-color: #555;
+}
+
+.dashboard a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.dashboard a:hover {
+    text-decoration: underline;
+}
+
+.dashboard .saldo-insuficiente {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+/* Estilos para a tabela de estações */
+.dashboard .estacao-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard .estacao-item button {
+    background-color: #28a745;
+}
+
+.dashboard .estacao-item button:hover {
+    background-color: #218838;
+}
+
+.dashboard .estacao-item a {
+    margin-left: 10px;
+    color: #fff;
+    background-color: #007bff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.dashboard .estacao-item a:hover {
+    background-color: #0056b3;
+}
