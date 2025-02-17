@@ -8,7 +8,7 @@ from app.models import Usuario, Estacao, Bicicleta, Aluguel
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
-# Decorator para verificar se o usuário está logado
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -18,7 +18,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Rota para cadastrar um usuário
+
 @user_bp.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar_usuario():
     if request.method == 'POST':
@@ -43,7 +43,6 @@ def cadastrar_usuario():
     return render_template('user/cadastrar_usuario.html')
 
 
-# Rota para o login de usuário
 @user_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -60,15 +59,13 @@ def login():
             flash('Email ou senha incorretos!', 'error')
             return redirect(url_for('user.login'))
 
-        session['usuario_id'] = usuario.id  # Salva ID do usuário na sessão
+        session['usuario_id'] = usuario.id
         flash('Login realizado com sucesso!', 'success')
         return redirect(url_for('user.dashboard'))
 
     return render_template('user/login.html')
 
 
-
-# Rota para logout
 @user_bp.route('/logout')
 def logout():
     session.pop('usuario_id', None)
@@ -137,8 +134,6 @@ def alugar_bicicleta(estacao_id, bicicleta_id):
     return redirect(url_for('user.dashboard'))
 
 
-
-
 @user_bp.route('/bicicletas/<int:estacao_id>')
 @login_required
 def listar_bicicletas_por_estacao(estacao_id):
@@ -187,7 +182,6 @@ def devolver_bicicleta(aluguel_id):
         flash('Esta bicicleta já foi devolvida.', 'error')
         return redirect(url_for('user.dashboard'))
 
-    # O usuário escolhe a estação onde deseja devolver a bicicleta
     estacao_id = int(request.form['estacao_id'])
     estacao = Estacao.query.get(estacao_id)
 
@@ -203,7 +197,7 @@ def devolver_bicicleta(aluguel_id):
         flash('Data de devolução inválida.', 'error')
         return redirect(url_for('user.dashboard'))
 
-    tempo_aluguel = (aluguel.data_fim - aluguel.data_inicio).total_seconds() / 3600  # em horas
+    tempo_aluguel = (aluguel.data_fim - aluguel.data_inicio).total_seconds() / 3600
 
     if bicicleta.valor_por_hora: 
         valor_total = tempo_aluguel * bicicleta.valor_por_hora

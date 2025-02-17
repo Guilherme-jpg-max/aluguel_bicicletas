@@ -1,25 +1,61 @@
 {% extends "admin/base_admin.html" %}
 
 {% block content %}
-<h2>Estações</h2>
+<h2 class="mb-4">Gerenciamento de Estações</h2>
+
+<!-- Exibição de Mensagens -->
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                 {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endfor %}
     {% endif %}
 {% endwith %}
-<a href="{{ url_for('admin.adicionar_estacao') }}">Adicionar Estação</a>
-<ul>
-    {% for estacao in estacoes %}
-    <li>
-        {{ estacao.nome }} - {{ estacao.localizacao }} (Capacidade: {{ estacao.capacidade }})
-        <form action="{{ url_for('admin.remover_estacao', id=estacao.id) }}" method="POST" style="display:inline;">
-            <button type="submit">Remover</button>
-        </form>
-    </li>
-    {% endfor %}
-</ul>
+
+<!-- Botão para Adicionar Estação -->
+<div class="mb-3">
+    <a href="{{ url_for('admin.adicionar_estacao') }}" class="btn btn-primary">
+        + Adicionar Estação
+    </a>
+</div>
+
+{% if estacoes %}
+<!-- Tabela Responsiva -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Nome</th>
+                <th>Localização</th>
+                <th>Capacidade</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estacao in estacoes %}
+            <tr>
+                <td>{{ estacao.nome }}</td>
+                <td>{{ estacao.localizacao }}</td>
+                <td>{{ estacao.capacidade }}</td>
+                <td>
+                    <form action="{{ url_for('admin.remover_estacao', id=estacao.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja remover esta estação?');">
+                            Remover
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info mt-3" role="alert">
+    Nenhuma estação cadastrada.
+</div>
+{% endif %}
+
 {% endblock %}

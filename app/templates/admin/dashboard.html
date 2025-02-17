@@ -1,73 +1,66 @@
 {% extends "admin/base_admin.html" %}
 
 {% block content %}
-<h2>Dashboard do Administrador</h2>
+<h2 class="mb-4">Dashboard do Administrador</h2>
 
+<!-- Exibição de Mensagens -->
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                 {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endfor %}
     {% endif %}
 {% endwith %}
 
-<p>Bem-vindo, {{ administrador.nome }}!</p>
+<p class="lead">Bem-vindo, <strong>{{ administrador.nome }}</strong>!</p>
 
-<h3>Aluguéis Recentes</h3>
+<!-- Seção de Aluguéis Recentes -->
+<h3 class="mt-4">Aluguéis Recentes</h3>
 
 {% if alugueis %}
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Usuário</th>
-            <th>Bicicleta</th>
-            <th>Data de Início</th>
-            <th>Data de Fim</th>
-            <th>Valor Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for aluguel in alugueis %}
-        <tr>
-            <td>{{ aluguel.id }}</td>
-            <td>
-                {% if aluguel.usuario %}
-                    {{ aluguel.usuario.nome }}
-                {% else %}
-                    <i>Usuário não encontrado</i>
-                {% endif %}
-            </td>
-            <td>
-                {% if aluguel.bicicleta %}
-                    {{ aluguel.bicicleta.modelo }}
-                {% else %}
-                    <i>Bicicleta não encontrada</i>
-                {% endif %}
-            </td>
-            <td>{{ aluguel.data_inicio.strftime('%d/%m/%Y %H:%M') }}</td>
-            <td>
-                {% if aluguel.data_fim %}
-                    {{ aluguel.data_fim.strftime('%d/%m/%Y %H:%M') }}
-                {% else %}
-                    Em andamento
-                {% endif %}
-            </td>
-            <td>
-                {% if aluguel.valor_total %}
-                    R$ {{ aluguel.valor_total | round(2) }}
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Usuário</th>
+                <th>Bicicleta</th>
+                <th>Data de Início</th>
+                <th>Data de Fim</th>
+                <th>Valor Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for aluguel in alugueis %}
+            <tr>
+                <td>
+                    {{ aluguel.usuario.nome if aluguel.usuario else "<span class='text-muted'><i>Não encontrado</i></span>" | safe }}
+                </td>
+                <td>
+                    {{ aluguel.bicicleta.modelo if aluguel.bicicleta else "<span class='text-muted'><i>Não encontrada</i></span>" | safe }}
+                </td>
+                <td>{{ aluguel.data_inicio.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>
+                    {% if aluguel.data_fim %}
+                        {{ aluguel.data_fim.strftime('%d/%m/%Y %H:%M') }}
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Ativo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ ("R$ {:,.2f}".format(aluguel.valor_total) if aluguel.valor_total else "<span class='text-muted'>-</span>") | safe }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
-<p>Nenhum aluguel registrado ainda.</p>
+<div class="alert alert-info mt-3" role="alert">
+    Nenhum aluguel registrado ainda.
+</div>
 {% endif %}
 
 {% endblock %}

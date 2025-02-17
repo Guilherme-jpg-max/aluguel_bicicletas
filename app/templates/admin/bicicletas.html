@@ -2,6 +2,7 @@
 
 {% block content %}
 <h2>Bicicletas</h2>
+
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
@@ -11,17 +12,30 @@
         {% endfor %}
     {% endif %}
 {% endwith %}
+
 <a href="{{ url_for('admin.adicionar_bicicleta') }}">Adicionar Bicicleta</a>
-<ul>
-    {% for bicicleta in bicicletas %}
-    <li>
-        {{ bicicleta.modelo }} - Série: {{ bicicleta.numero_serie }} (Status: {{ bicicleta.status }})
-        <br>
-        Estação: {{ bicicleta.estacao.nome if bicicleta.estacao else 'Nenhuma estação' }}
-        <form action="{{ url_for('admin.remover_bicicleta', id=bicicleta.id) }}" method="POST" style="display:inline;">
-            <button type="submit">Remover</button>
-        </form>
-    </li>
-    {% endfor %}
-</ul>
+
+{% set estacoes = {} %}
+{% for bicicleta in bicicletas %}
+    {% set estacao_nome = bicicleta.estacao.nome if bicicleta.estacao else 'Sem Estação' %}
+    {% if estacao_nome not in estacoes %}
+        {% set _ = estacoes.update({estacao_nome: []}) %}
+    {% endif %}
+    {% set _ = estacoes[estacao_nome].append(bicicleta) %}
+{% endfor %}
+
+{% for estacao, bikes in estacoes.items() %}
+    <h3>{{ estacao }}</h3>
+    <ul>
+        {% for bicicleta in bikes %}
+        <li>
+            {{ bicicleta.modelo }} - Série: {{ bicicleta.numero_serie }} (Status: {{ bicicleta.status }})
+            <form action="{{ url_for('admin.remover_bicicleta', id=bicicleta.id) }}" method="POST" style="display:inline;">
+                <button type="submit">Remover</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+
 {% endblock %}

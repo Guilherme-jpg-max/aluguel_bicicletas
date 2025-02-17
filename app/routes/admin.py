@@ -7,7 +7,6 @@ from app import db
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Decorator para verificar se o administrador está logado
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -16,7 +15,6 @@ def login_required(f):
             flash('Você precisa estar logado para acessar esta página.', 'error')
             return redirect(url_for('admin.login'))
         
-        # Substitua Query.get() por Session.get()
         admin = db.session.get(Administrador, admin_id)
         if not admin:
             session.pop('admin_id', None)
@@ -27,7 +25,6 @@ def login_required(f):
     return decorated_function
 
 
-# Rota para cadastrar um administrador
 @admin_bp.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar_admin():
     if request.method == 'POST':
@@ -50,7 +47,6 @@ def cadastrar_admin():
 
     return render_template('admin/cadastrar_admin.html')
 
-# Rota para o dashboard do administrador (protegida)
 @admin_bp.route('/dashboard')
 @login_required
 def admin_dashboard():
@@ -60,7 +56,6 @@ def admin_dashboard():
         flash("Acesso negado!", "danger")
         return redirect(url_for('admin.login'))
 
-    # Substitua Query.get() por Session.get()
     administrador = db.session.get(Administrador, admin_id)
     
     if not administrador:
@@ -82,7 +77,7 @@ def admin_estacoes():
     
     return render_template('admin/estacoes.html', estacoes=estacoes)
 
-# Rota para adicionar uma estação (protegida)
+
 @admin_bp.route('/estacoes/adicionar', methods=['GET', 'POST'])
 @login_required
 def adicionar_estacao():
@@ -112,7 +107,7 @@ def admin_bicicletas():
     
     return render_template('admin/bicicletas.html', bicicletas=bicicletas)
 
-# Rota para adicionar uma bicicleta (protegida)
+
 @admin_bp.route('/bicicletas/adicionar', methods=['GET', 'POST'])
 @login_required
 def adicionar_bicicleta():
@@ -139,7 +134,7 @@ def adicionar_bicicleta():
     
     return render_template('admin/adicionar_bicicleta.html', estacoes=estacoes)
 
-# Rota para login
+
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -166,11 +161,9 @@ def logout():
     return redirect(url_for('admin.login'))
 
 
-# Rota para remover uma estação
 @admin_bp.route('/estacoes/remover/<int:id>', methods=['POST'])
 @login_required
 def remover_estacao(id):
-    # Substitua Query.get_or_404() por Session.get() com tratamento de erro
     estacao = db.session.get(Estacao, id)
     if not estacao:
         flash('Estação não encontrada!', 'error')
@@ -184,11 +177,11 @@ def remover_estacao(id):
     flash('Estação e bicicletas associadas removidas com sucesso!', 'success')
     return redirect(url_for('admin.admin_estacoes'))
 
-# Rota para remover uma bicicleta
+
 @admin_bp.route('/bicicletas/remover/<int:id>', methods=['POST'])
 @login_required
 def remover_bicicleta(id):
-    # Substitua Query.get_or_404() por Session.get() com tratamento de erro
+
     bicicleta = db.session.get(Bicicleta, id)
     if not bicicleta:
         flash('Bicicleta não encontrada!', 'error')
@@ -199,7 +192,7 @@ def remover_bicicleta(id):
     flash('Bicicleta removida com sucesso!', 'success')
     return redirect(url_for('admin.admin_bicicletas'))
 
-# Rota para remover um administrador
+
 @admin_bp.route('/administradores/remover/<int:id>', methods=['POST'])
 @login_required
 def remover_administrador(id):
