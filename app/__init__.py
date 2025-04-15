@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from config import Config, DevelopmentConfig, TestingConfig, ProductionConfig
+from config import DevelopmentConfig, TestingConfig, ProductionConfig
 import os
 
 db = SQLAlchemy()
@@ -8,11 +8,8 @@ db = SQLAlchemy()
 def create_app(config_name=None):
     app = Flask(__name__)
 
-    # Se 'config_name' não for fornecido, use o valor da variável de ambiente FLASK_ENV
     if not config_name:
-        config_name = os.getenv('FLASK_ENV', 'development')  # Padrão para 'development'
-
-    # Carregar a configuração com base no 'config_name'
+        config_name = os.getenv('FLASK_ENV', 'development')
     if config_name == 'testing':
         app.config.from_object(TestingConfig)
     elif config_name == 'production':
